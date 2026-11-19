@@ -1,0 +1,260 @@
+
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#101116">
+<title>DN AI — Your AI Assistant</title>
+<style>
+*{box-sizing:border-box}
+:root{
+--bg:#101116;--side:#17161d;--panel:#211f28;--text:#f5f3f7;
+--muted:#9995a4;--border:#302d38;--accent:#8c79ff;--accent2:#7258f5;
+}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;height:100dvh;overflow:hidden}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer;color:inherit}
+.app{height:100dvh;display:flex}
+.sidebar{width:275px;flex-shrink:0;background:var(--side);display:flex;flex-direction:column;padding:14px;border-right:1px solid var(--border)}
+.logo{display:flex;align-items:center;gap:10px;padding:8px;margin-bottom:20px}
+.logo-icon{height:39px;width:39px;border-radius:13px;background:linear-gradient(135deg,#a694ff,#6950eb);display:grid;place-items:center;font-weight:900;font-size:20px}
+.logo-name{font-weight:750;font-size:18px}
+.logo-sub{font-size:11px;color:var(--muted)}
+.newchat{width:100%;padding:13px;border-radius:12px;background:#24212c;border:1px solid #383342;text-align:left}
+.newchat:hover{background:#302b3c}
+.newchat span{margin-right:10px}
+.label{color:var(--muted);font-size:11px;letter-spacing:1px;padding:22px 8px 10px}
+.history{flex:1;overflow-y:auto}
+.history-item{width:100%;padding:11px 12px;border:0;background:transparent;border-radius:9px;text-align:left;color:#ccc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.history-item:hover,.history-item.active{background:#292630;color:white}
+.bottom{border-top:1px solid var(--border);padding-top:10px}
+.settings-btn{width:100%;background:none;border:0;text-align:left;padding:12px;border-radius:10px;color:#ccc}
+.settings-btn:hover{background:var(--panel)}
+.user{display:flex;align-items:center;gap:10px;padding:10px}
+.avatar{width:35px;height:35px;border-radius:50%;display:grid;place-items:center;background:#514779;font-size:12px;font-weight:bold}
+.user small{display:block;color:var(--muted);font-size:11px}
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.header{height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-bottom:1px solid var(--border)}
+.header-title{font-weight:650;display:flex;gap:9px;align-items:center}
+.status{font-size:11px;color:#a7a0b3;background:#24212b;border:1px solid var(--border);padding:4px 9px;border-radius:20px}
+.iconbtn{border:0;background:transparent;border-radius:9px;padding:9px;color:#bbb;font-size:20px}
+.iconbtn:hover{background:var(--panel)}
+.mobile-menu{display:none}
+.chat{flex:1;overflow:auto;scroll-behavior:smooth}
+.welcome{max-width:800px;margin:8vh auto 30px;padding:25px;text-align:center}
+.biglogo{width:65px;height:65px;border-radius:21px;background:linear-gradient(140deg,#a394ff,#634ce7);display:grid;place-items:center;font-size:32px;font-weight:900;margin:0 auto 22px;box-shadow:0 10px 40px #8068ff35}
+.welcome h1{font-size:clamp(26px,4vw,38px);letter-spacing:-1px;margin:0 0 10px}
+.welcome>p{color:var(--muted);margin:0 0 32px}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;text-align:left}
+.card{background:#19171f;border:1px solid var(--border);padding:16px;border-radius:15px;display:flex;gap:12px;align-items:center;transition:.15s}
+.card:hover{border-color:#7564ce;transform:translateY(-1px)}
+.card-icon{font-size:23px}
+.card b{display:block;font-size:14px}
+.card small{color:var(--muted);font-size:12px}
+.messages{max-width:850px;width:100%;margin:0 auto;padding:10px 22px 30px;display:flex;flex-direction:column;gap:24px}
+.msg{display:flex;gap:12px;align-items:flex-start}
+.msgicon{width:33px;height:33px;border-radius:11px;background:#292631;display:grid;place-items:center;flex-shrink:0;font-size:12px;font-weight:800}
+.msg.user .msgicon{background:#51467d}
+.msgbody{min-width:0;line-height:1.7;overflow-wrap:anywhere;padding-top:2px}
+.msg.user .msgbody{background:#27242e;padding:11px 15px;border-radius:15px}
+.msgbody pre{overflow-x:auto;background:#17151d;border:1px solid var(--border);padding:12px;border-radius:10px}
+.msgbody code{background:#292631;padding:2px 4px;border-radius:4px}
+.msgbody pre code{background:none;padding:0}
+.msgbody a{color:#a99aff}
+.msg-tools{display:flex;gap:8px;margin-top:7px}
+.msg-tools button{border:1px solid var(--border);background:transparent;border-radius:7px;padding:4px 9px;color:var(--muted);font-size:12px}
+.typing{color:var(--muted)}
+.dots span{animation:blink 1.2s infinite;opacity:.3}
+.dots span:nth-child(2){animation-delay:.2s}
+.dots span:nth-child(3){animation-delay:.4s}
+@keyframes blink{50%{opacity:1}}
+.composer-area{max-width:850px;width:100%;margin:0 auto;padding:8px 18px 14px}
+.composer{border:1px solid #393541;background:#1c1a22;border-radius:19px;padding:10px;display:flex;gap:10px;align-items:flex-end}
+.composer:focus-within{border-color:#7866d6}
+#input{background:transparent;border:0;outline:none;resize:none;color:var(--text);flex:1;min-height:42px;max-height:170px;padding:10px}
+.send{width:42px;height:42px;border:0;border-radius:13px;background:var(--accent2);font-size:22px;font-weight:bold}
+.send:disabled{opacity:.4}
+.note{text-align:center;color:#777380;font-size:11px;padding-top:9px}
+.hidden{display:none!important}
+.modal-bg{position:fixed;inset:0;background:#0009;display:grid;place-items:center;padding:15px;z-index:10}
+.modal{background:#1b1921;border:1px solid var(--border);border-radius:18px;padding:22px;width:min(100%,440px)}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.modal-head h2{margin:0;font-size:20px}
+.fieldlabel{font-size:13px;font-weight:600;margin:14px 0 7px;display:block}
+.field{width:100%;background:#111016;border:1px solid #383441;border-radius:10px;padding:12px;color:white;outline:none}
+.field:focus{border-color:var(--accent)}
+.help{font-size:12px;color:var(--muted);line-height:1.5}
+.modal-actions{display:flex;justify-content:space-between;gap:10px;margin-top:20px}
+.btn{padding:10px 13px;border-radius:10px;border:1px solid var(--border);background:#292631}
+.btn.primary{background:var(--accent2);border-color:transparent}
+.overlay{display:none}
+@media(max-width:720px){
+.sidebar{position:fixed;inset:0 auto 0 0;width:min(85%,300px);z-index:5;transform:translateX(-110%);transition:.2s;box-shadow:15px 0 40px #0006}
+.open .sidebar{transform:translateX(0)}
+.open .overlay{display:block;position:fixed;inset:0;background:#0008;z-index:4}
+.mobile-menu{display:inline-block}
+.header{padding:0 10px}
+.welcome{margin:4vh auto 20px;padding:17px}
+.cards{grid-template-columns:1fr}
+.card{padding:13px}
+.messages{padding:10px 14px 20px}
+.composer-area{padding:6px 10px 12px}
+.status{display:none}
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+<aside class="sidebar">
+<div class="logo"><div class="logo-icon">D</div><div><div class="logo-name">DN AI</div><div class="logo-sub">Your intelligent assistant</div></div></div>
+<button class="newchat" id="newchat"><span>＋</span> New chat</button>
+<div class="label">CHAT HISTORY</div>
+<div class="history" id="history"></div>
+<div class="bottom">
+<button class="settings-btn" id="settings">⚙ &nbsp; Settings</button>
+<div class="user"><div class="avatar">DN</div><div><b>DN AI Assistant</b><small>Personal workspace</small></div></div>
+</div>
+</aside>
+<div class="overlay" id="overlay"></div>
+<main class="main">
+<header class="header">
+<div class="header-title"><button class="iconbtn mobile-menu" id="menu">☰</button><span class="logo-icon" style="width:28px;height:28px;border-radius:9px;font-size:15px">D</span> DN AI <span class="status">AI Assistant</span></div>
+<button class="iconbtn" id="settingsTop">⚙</button>
+</header>
+<section class="chat" id="chat">
+<div class="welcome" id="welcome">
+<div class="biglogo">D</div>
+<h1>What can I help you with?</h1>
+<p>Your AI assistant for ideas, knowledge, creativity and everyday work.</p>
+<div class="cards">
+<button class="card" data-prompt="Help me create a business plan step by step"><span class="card-icon">💼</span><span><b>Build a business</b><small>Ideas, plans and growth</small></span></button>
+<button class="card" data-prompt="Teach me something new in a simple way with examples"><span class="card-icon">🎓</span><span><b>Learn something</b><small>Understand any topic</small></span></button>
+<button class="card" data-prompt="Help me write a professional text or message"><span class="card-icon">✍️</span><span><b>Write anything</b><small>Messages, ideas, content</small></span></button>
+<button class="card" data-prompt="Give me 10 original creative ideas for a project"><span class="card-icon">🚀</span><span><b>Explore ideas</b><small>Think beyond the usual</small></span></button>
+</div>
+</div>
+<div class="messages" id="messages"></div>
+</section>
+<div class="composer-area">
+<div class="composer"><textarea id="input" placeholder="Message DN AI..." rows="1"></textarea><button class="send" id="send" title="Send">↑</button></div>
+<div class="note">DN AI may make mistakes. Verify important information.</div>
+</div>
+</main>
+</div>
+
+<div class="modal-bg hidden" id="modal">
+<div class="modal">
+<div class="modal-head"><h2>Settings</h2><button class="iconbtn" id="close">×</button></div>
+<label class="fieldlabel">AI API URL</label>
+<input class="field" id="endpoint" placeholder="https://your-ai-api.workers.dev">
+<p class="help">Paste your AI server URL here. Never paste your API secret/key into this website.</p>
+<label class="fieldlabel">Language</label>
+<select class="field" id="lang"><option value="kk">Қазақша</option><option value="ru">Русский</option><option value="en">English</option></select>
+<div class="modal-actions"><button class="btn" id="clear">Delete all chats</button><button class="btn primary" id="save">Save</button></div>
+</div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+const storeKey="dnai_chats_v1";
+let chats=JSON.parse(localStorage.getItem(storeKey)||"[]");
+let active=null,busy=false;
+const chatEl=$("#chat"),welcome=$("#welcome"),messages=$("#messages"),input=$("#input"),sendBtn=$("#send");
+$("#endpoint").value=localStorage.getItem("dnai_endpoint")||"";
+$("#lang").value=localStorage.getItem("dnai_lang")||"kk";
+
+function save(){localStorage.setItem(storeKey,JSON.stringify(chats))}
+function current(){return chats.find(c=>c.id===active)}
+function newChat(){
+ const c={id:Date.now().toString(),title:"New chat",messages:[]};
+ chats.unshift(c);active=c.id;save();renderHistory();renderChat();input.focus();closeMenu();
+}
+function renderHistory(){
+ const list=$("#history");list.innerHTML="";
+ chats.forEach(c=>{
+  const b=document.createElement("button");b.className="history-item"+(c.id===active?" active":"");
+  b.textContent="▤  "+c.title;b.onclick=()=>{active=c.id;renderHistory();renderChat();closeMenu()};list.appendChild(b);
+ });
+}
+function renderChat(){
+ const c=current();messages.innerHTML="";
+ welcome.classList.toggle("hidden",!!(c&&c.messages.length));
+ if(!c)return;
+ c.messages.forEach(m=>addMessage(m.role,m.content,false));
+ chatEl.scrollTop=chatEl.scrollHeight;
+}
+function safeText(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+function format(text){
+ let s=safeText(text);
+ s=s.replace(/```([\\w-]*)\\n([\\s\\S]*?)```/g,(m,l,c)=>'<pre><code>'+c+'</code></pre>');
+ s=s.replace(/`([^`]+)`/g,'<code>$1</code>');
+ s=s.replace(/\\*\\*([^*]+)\\*\\*/g,'<b>$1</b>');
+ s=s.replace(/\\*([^*]+)\\*/g,'<i>$1</i>');
+ s=s.replace(/\\n/g,'<br>');
+ return s;
+}
+function addMessage(role,text,scroll=true){
+ const row=document.createElement("div");row.className="msg "+role;
+ const ico=document.createElement("div");ico.className="msgicon";ico.textContent=role==="user"?"You":"D";
+ const body=document.createElement("div");body.className="msgbody";body.innerHTML=format(text);
+ row.append(ico,body);messages.appendChild(row);
+ if(role==="assistant"&&!text.includes("thinking")){
+  const tools=document.createElement("div");tools.className="msg-tools";
+  const copy=document.createElement("button");copy.textContent="Copy";
+  copy.onclick=()=>navigator.clipboard.writeText(text).then(()=>copy.textContent="Copied!");
+  tools.append(copy);body.append(tools);
+ }
+ if(scroll)chatEl.scrollTop=chatEl.scrollHeight;
+ return body;
+}
+function closeMenu(){ $("#app").classList.remove("open") }
+function send(){
+ const text=input.value.trim();if(!text||busy)return;
+ if(!current())newChat();
+ const c=current();c.messages.push({role:"user",content:text});
+ if(c.messages.length===1)c.title=text.slice(0,35)+(text.length>35?"…":"");
+ save();input.value="";input.style.height="auto";renderHistory();renderChat();
+ busy=true;sendBtn.disabled=true;
+ const answer=addMessage("assistant","thinking");
+ answer.classList.add("typing");answer.innerHTML='<span class="dots">DN AI is thinking<span>.</span><span>.</span><span>.</span></span>';
+ const url=localStorage.getItem("dnai_endpoint");
+ if(!url){
+  answer.classList.remove("typing");
+  answer.textContent="AI API қосылмаған. Settings бөліміне сервер API URL адресін енгіз. Чат тарихы сақталды.";
+  busy=false;sendBtn.disabled=false;return;
+ }
+ fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({message:text,history:c.messages.slice(-16)})})
+ .then(async r=>{const d=await r.json();if(!r.ok)throw Error(d.error||"API error");return d})
+ .then(d=>{
+  const reply=d.reply||d.text||d.message||"AI response is empty.";
+  answer.classList.remove("typing");answer.innerHTML=format(reply);
+  const tools=document.createElement("div");tools.className="msg-tools";
+  const copy=document.createElement("button");copy.textContent="Copy";copy.onclick=()=>navigator.clipboard.writeText(reply).then(()=>copy.textContent="Copied!");
+  tools.append(copy);answer.append(tools);
+  c.messages.push({role:"assistant",content:reply});save();
+ })
+ .catch(e=>{answer.classList.remove("typing");answer.textContent="Connection error: "+e.message+" — check API URL in Settings."})
+ .finally(()=>{busy=false;sendBtn.disabled=false;chatEl.scrollTop=chatEl.scrollHeight});
+}
+$("#send").onclick=send;
+input.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}});
+input.addEventListener("input",()=>{input.style.height="auto";input.style.height=Math.min(input.scrollHeight,160)+"px"});
+$("#newchat").onclick=newChat;
+$("#menu").onclick=()=>$("#app").classList.add("open");
+$("#overlay").onclick=closeMenu;
+$("#settings").onclick=$("#settingsTop").onclick=()=>$("#modal").classList.remove("hidden");
+$("#close").onclick=()=>$("#modal").classList.add("hidden");
+$("#save").onclick=()=>{
+ localStorage.setItem("dnai_endpoint",$("#endpoint").value.trim());
+ localStorage.setItem("dnai_lang",$("#lang").value);
+ $("#modal").classList.add("hidden");
+};
+$("#clear").onclick=()=>{
+ if(confirm("Delete all chat history?")){chats=[];active=null;save();renderHistory();renderChat()}
+};
+document.querySelectorAll(".card").forEach(b=>b.onclick=()=>{input.value=b.dataset.prompt;send()});
+if(chats.length){active=chats[0].id;renderHistory();renderChat()}else renderHistory();
+</script>
+</body>
+</html>
